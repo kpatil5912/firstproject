@@ -1,28 +1,29 @@
-pipeline{
+pipeline {
     agent any
     stages {
-        stage("Clean Up"){
+        stage('Build') {
             steps {
-                deleteDir()
+                sh 'mvn -B -DskipTests clean package'
             }
         }
-        stage("Clone repo"){
-            steps{
-                sh "git clone https://github.com/kpatil5912/firstproject.git"
+        stage('Test') {
+            steps {
+                sh 'mvn test'
             }
-        }
-        stage("Build"){
-            steps{
-                dir("firstproject"){
-                    sh "mvn clean install"
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
                 }
             }
         }
-        stage("Test"){
-            steps{
-                dir("firstproject"){
-                    sh "mvn test"
-                }
+        stage('Deliver') {
+            steps {
+                sh './jenkins/scripts/deliver.sh'
+            }
+        }
+        stage('Complete') {
+            steps {
+                echo 'Job Complete!'
             }
         }
     }
